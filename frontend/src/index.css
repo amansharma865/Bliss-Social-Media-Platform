@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add this to prevent cursor appearing everywhere */
+* {
+  caret-color: transparent;
+}
+
+/* Show cursor only in input elements and contenteditable elements */
+input, 
+textarea, 
+[contenteditable="true"] {
+  caret-color: auto;
+}
