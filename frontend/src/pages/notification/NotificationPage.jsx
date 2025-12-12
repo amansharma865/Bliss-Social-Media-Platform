@@ -71,51 +71,55 @@ const NotificationPage = () => {
 						<LoadingSpinner size='lg' />
 					</div>
 				)}
-				{notifications?.length === 0 && <div className='text-center p-4 font-bold'>No notifications 🤔</div>}
-				{notifications?.map((notification) => (
-					<div 
-						className={`border-b border-gray-700 ${
-							notification.type === 'message' && !notification.read ? 'bg-gray-800 bg-opacity-40' : ''
-						}`} 
-						key={notification._id}
-					>
-						<div className='flex gap-2 p-4'>
-							{notification.type === "follow" && <FaUser className='w-7 h-7 text-primary' />}
-							{notification.type === "like" && <FaHeart className='w-7 h-7 text-red-500' />}
-							{notification.type === "message" && (
-								<IoChatbubbleEllipsesOutline 
-									className={`w-7 h-7 ${notification.read ? 'text-blue-500' : 'text-white'}`} 
-								/>
-							)}
-								<Link 
-									to={notification.type === "message" ? 
-										`/chat?user=${notification.from.username}` : 
-										`/profile/${notification.from.username}`}
-									className={`flex items-center gap-2 ${
-										notification.type === 'message' && !notification.read ? 'text-white' : ''
-									}`}
-								>
-								<div className='avatar'>
-									<div className='w-8 rounded-full'>
-										<img src={notification.from.profileImg || "/avatar-placeholder.png"} />
+				{!isLoading && notifications?.length === 0 && <div className='text-center p-4 font-bold'>No notifications 🤔</div>}
+				{notifications?.map((notification) => {
+					// make `from` safe — backend may return null
+					const from = notification.from || { username: "unknown", profileImg: "/avatar-placeholder.png" };
+					const username = from.username || "unknown";
+					const profileImg = from.profileImg || "/avatar-placeholder.png";
+					const isUnreadMessage = notification.type === "message" && !notification.read;
+
+					// fallback link (if username is 'unknown' use '#')
+					const to =
+						username === "unknown"
+							? "#"
+							: notification.type === "message"
+							? `/chat?user=${username}`
+							: `/profile/${username}`;
+
+					return (
+						<div
+							className={`border-b border-gray-700 ${isUnreadMessage ? "bg-gray-800 bg-opacity-40" : ""}`}
+							key={notification._id}
+						>
+							<div className='flex gap-2 p-4'>
+								{notification.type === "follow" && <FaUser className='w-7 h-7 text-primary' />}
+								{notification.type === "like" && <FaHeart className='w-7 h-7 text-red-500' />}
+								{notification.type === "message" && (
+									<IoChatbubbleEllipsesOutline
+										className={`w-7 h-7 ${notification.read ? "text-blue-500" : "text-white"}`}
+									/>
+								)}
+
+								<Link to={to} className={`flex items-center gap-2 ${isUnreadMessage ? "text-white" : ""}`}>
+									<div className='avatar'>
+										<div className='w-8 rounded-full'>
+											<img src={profileImg} alt={username} />
+										</div>
 									</div>
-								</div>
-								<div className='flex gap-1'>
-									<span className={`font-bold ${
-										notification.type === 'message' && !notification.read ? 'text-white' : ''
-									}`}>
-										@{notification.from.username}
-									</span>{" "}
-									<span className={notification.type === 'message' && !notification.read ? 'text-white' : ''}>
-										{notification.type === "follow" && "followed you"}
-										{notification.type === "like" && "liked your post"}
-										{notification.type === "message" && "sent you a message"}
-									</span>
-								</div>
-							</Link>
+									<div className='flex gap-1'>
+										<span className={`font-bold ${isUnreadMessage ? "text-white" : ""}`}>@{username}</span>{" "}
+										<span className={isUnreadMessage ? "text-white" : ""}>
+											{notification.type === "follow" && "followed you"}
+											{notification.type === "like" && "liked your post"}
+											{notification.type === "message" && "sent you a message"}
+										</span>
+									</div>
+								</Link>
+							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 		</>
 	);
